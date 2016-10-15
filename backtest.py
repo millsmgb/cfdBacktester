@@ -33,8 +33,8 @@ def backTest(oracle, cfd, db, collection, date):
 
 def main():
 	
-	MongoClientAddress = "43.243.203.47"
-	MongoPort = "12347"
+	MongoClientAddress = 
+	MongoPort = 
 
 	oracle = PriceOracle(MongoClientAddress, MongoPort)
 
