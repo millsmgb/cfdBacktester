@@ -4,38 +4,39 @@
 # Purpose of this python file is to simulate the operations of a CFD as if it were written as a smart contract
 # Note network difficulty, block times, and gas/transaction costs are not taken into account
 
-class CFD:
-	def __init__(self):
+class CFD: # CFD Class handles all the contract requirements
+	def __init__(self): # Base constructor
 		self.marginLong = 10000
 		self.marginShort = 10000
 		self.price = 0
 		self.isTerminated = False
 
-	def __init__(self, marginLong, marginShort, currPrice):
+	def __init__(self, marginLong, marginShort, currPrice): # Constructor for a new contract
 		self.marginLong = marginLong
 		self.marginShort = marginShort
 		self.price = currPrice
+		self.isTerminated = False
 
 	def mark(self, currPrice): # Mark the margin accounts based on new price information
-		priceDiff = (currPrice - self.price)
+		priceDiff = (currPrice - self.price) # Calculate change in price to mark
 
-		if (self.marginShort <= priceDiff):
+		if (self.marginShort <= priceDiff): # Liquidate contract if insufficient margin
 			liquidateShort(self)
 
-		else if (self.marginLong <= priceDiff):
+		elif (self.marginLong <= priceDiff): # As above
 			liquidateLong(self)
 
-		else:
+		else: # Sufficient margin in the account, therefore mark to market
 			self.marginShort = self.marginShort - priceDiff
 			self.marginLong = self.marginLong + priceDiff
 			self.price = currPrice
 
-	def liquidateShort(self):
+	def liquidateShort(self): # If the short position is insufficient, liquidate it
 		self.marginLong = self.marginLong + self.marginShort
 		self.marginShort = 0
 		self.isTerminated = True
 	
-	def liquidateLong(self):
+	def liquidateLong(self): # If the long position is insufficient, liquidate it
 		self.marginShort = self.marginShort + self.marginLong
 		self.marginLong = 0
 		self.isTerminated = True
