@@ -3,11 +3,31 @@
 
 # Backtester
 
+# Import date and time
+from datetime import date, timedelta as td
+
 # Import for oracle
 from marketPriceOracle import PriceOracle
 
 # Import CFD
 from cfd import CFD
+
+def backTest(oracle, cfd, db, collection, date):
+
+	trades = oracle.getDocumentsByDate(db, collection, date)
+	
+	print("Margin - Long position: " + str(cfd.marginLong))
+	print("Margin - Short position: " + str(cfd.marginShort))
+
+	for trade in trades:
+		if (cfd.isTerminated == False):
+			print("Current Price: $" + trade['rate'])
+			cfd.mark(float(trade['rate']))
+			print("Margin - Long position: " + str(cfd.marginLong))
+			print("Margin - Short position: " + str(cfd.marginShort))
+		else:
+			print("Contract terminated")
+			break
 
 # Main method
 
@@ -18,22 +38,28 @@ def main():
 
 	oracle = PriceOracle(MongoClientAddress, MongoPort)
 
-	trades = oracle.getDocumentsByDate('poloniex_trade', 'ETH_USD', '2016-10-15')
+	firstTrade = oracle.getOneDocumentByDate('poloniex_trade', 'ETH_USD', '2016-09-15')
 	
-	testCFD = CFD(2, 2, float(trades[0]['rate']))
+	testCFD = CFD(2.475, 2.475, float(firstTrade['rate']))
 
-	print("Margin - Long position: " + str(testCFD.marginLong))
-	print("Margin - Short position: " + str(testCFD.marginShort))
+	print("Initial price: " + str(testCFD.price))
+	print("Initial long margin: " + str(testCFD.marginLong))
+	print("Initial short margin: " + str(testCFD.marginShort)) 
 
-	for trade in trades:
-		if (testCFD.isTerminated == False):
-			print("Current Price: $" + trade['rate'])
-			testCFD.mark(float(trade['rate']))
-			print("Margin - Long position: " + str(testCFD.marginLong))
-			print("Margin - Short position: " + str(testCFD.marginShort))
-		else:
-			print("Contract terminated")
+	d1 = date(2016, 9, 15)
+	d2 = date(2016, 10, 15)
+
+	delta = d2 - d1
+
+	for i in range(delta.days + 1):
+
+		if (testCFD.isTerminated == True):
+			print("Final day: " + str((d1 + td(days=i))))
 			break
+
+		backTest(oracle, testCFD, 'poloniex_trade', 'ETH_USD', str((d1 + td(days=i))))
+
+
 	
 	print("Final long margin: " + str(testCFD.marginLong))
 	print("Final short margin: " + str(testCFD.marginShort)) 

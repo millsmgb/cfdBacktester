@@ -46,3 +46,15 @@ class PriceOracle:
 
 		return trades
 
+	def getOneDocumentByDate(self, db, collection, date):
+		db = self.client[db]
+		collection = db[collection]
+
+		trades = collection.find_one(
+				{
+					'date': {'$regex' : str(date) + ".*"}
+				}
+			)
+
+		return trades	
+
