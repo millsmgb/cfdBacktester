@@ -12,6 +12,9 @@ from marketPriceOracle import PriceOracle
 # Import CFD
 from cfd import CFD
 
+# Import Graphs
+from graph import Graph
+
 def backTest(oracle, cfd, db, collection, date):
 
 	trades = oracle.getDocumentsByDate(db, collection, date)
@@ -32,6 +35,12 @@ def backTest(oracle, cfd, db, collection, date):
 # Main method
 
 def main():
+
+	# Output to graph
+	x = []
+	shortResults= []
+	longResults = []
+
 	
 	MongoClientAddress = 
 	MongoPort = 
@@ -40,7 +49,9 @@ def main():
 
 	firstTrade = oracle.getOneDocumentByDate('poloniex_trade', 'ETH_USD', '2016-09-15')
 	
-	testCFD = CFD(2.475, 2.475, float(firstTrade['rate']))
+	testCFD = CFD(3, 3, float(firstTrade['rate']))
+
+	initialPrice = testCFD.price
 
 	print("Initial price: " + str(testCFD.price))
 	print("Initial long margin: " + str(testCFD.marginLong))
@@ -58,11 +69,28 @@ def main():
 			break
 
 		backTest(oracle, testCFD, 'poloniex_trade', 'ETH_USD', str((d1 + td(days=i))))
+		
+		x.append(d1+td(days=i))
+		shortResults.append(initialPrice - testCFD.price)
+		longResults.append(testCFD.price - initialPrice)
 
 
 	
 	print("Final long margin: " + str(testCFD.marginLong))
 	print("Final short margin: " + str(testCFD.marginShort)) 
+
+	y = {
+		'shortResults': shortResults,
+		'longResults': longResults
+	}
+
+	print(y)
+
+	simpleLineGraph = Graph()
+
+	simpleLineGraph.plotMultiLineChart(x, y, "Profit over Time")
+
+
 
 	
 if __name__ == "__main__": main()
