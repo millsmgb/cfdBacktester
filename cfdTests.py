@@ -26,14 +26,15 @@ class CFDTests:
 	# Backtest cfd
 	def backTest(self, oracle, cfd, db, collection, date):
 		trades = oracle.getDocumentsByDate(db, collection, date)
-		numTrades = trades.len()
+		numTrades = 0
 		for trade in trades:
 			if (cfd.isTerminated == False):
 				cfd.mark(float(trade['rate']))
-				return numTrades
+				numTrades +=1
 			else:
 				print("Contract terminated")
-				break
+				return numTrades
+		return numTrades
 
 	# Performance test for a single pass of a CFD backtested between two dates
 	def cfdPerformanceTest(self, startDate, endDate, oracle, 
@@ -99,7 +100,7 @@ class CFDTests:
 			ethPrice.append(testCFD.price)
 
 			# Current return
-			ethReturns.append((testCFD.price - prevPrice) -1)
+			ethReturns.append((testCFD.price/prevPrice) -1)
 
 			# Set previous price
 			prevPrice = testCFD.price

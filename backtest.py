@@ -36,11 +36,11 @@ def main():
 	cfdTest = CFDTests()
 
 	#Ethereum Tests
-	#cfdTest.cfdPerformanceTest('2016-09-17', '2016-10-17', oracle, 
-	#							'poloniex_trade', 'ETH_USD', 3.6, 3.6, 'Ethereum')
+	cfdTest.cfdPerformanceTest('2016-09-17', '2016-10-17', oracle, 
+								'poloniex_trade', 'ETH_USD', 2, 2, 'Ethereum')
 
-	cfdTest.findOptimalMargin('2016-09-17', '2016-10-17', oracle, 
-								'poloniex_trade', 'ETH_USD', 'Ethereum', 3.6)
+	#cfdTest.findOptimalMargin('2016-09-17', '2016-10-17', oracle, 
+								#'poloniex_trade', 'ETH_USD', 'Ethereum', 3.6)
 
 	print("Tests completed")
 
