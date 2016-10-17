@@ -25,7 +25,12 @@ class Graph:
 
 		plt.plot(x, y, linewidth=1.0)
 
+		plt.xticks(rotation='vertical')
+
 		plt.title(title)
+
+		plt.ylabel(labelY)
+		plt.xlabel(labelX)
 
 		plt.grid(True)
 
@@ -35,18 +40,21 @@ class Graph:
 
 	def plotMultiLineChart(self, x, y, title, legend, labelX, labelY):
 		plt.figure(self.numFigures)
-		legendNum = 0
 
-		for key in y:
-			plt.plot(x, y[key], label=legend[legendNum], linewidth=1.0)
-			legendNum = legendNum + 1
+		i = 0
+		for index in y:
+			plt.plot(x, y[i], label=legend[i], linewidth=1.0)
+			i = i + 1
+
+		plt.xticks(rotation='vertical')
 
 		plt.title(title)
 
 		plt.ylabel(labelY)
 		plt.xlabel(labelX)
 
-		plt.legend()
+
+		plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
 		plt.grid(True)
 
@@ -59,7 +67,33 @@ class Graph:
 
 		x.sort()
 
+		plt.xticks(rotation='vertical')
 		plt.hist(x)
+
+		plt.title(title)
+
+		plt.ylabel(labelY)
+		plt.xlabel(labelX)
+		plt.grid(True)
+
+
+
+		self.save(title)
+
+	def plotPDFHistogram(self, x, title, labelX, labelY):
+		plt.figure(self.numFigures)
+
+		x.sort()
+
+		plt.xticks(rotation='vertical')
+
+		fit = stats.norm.pdf(x, np.mean(x), np.std(x)) 
+
+		print("mean is: " + str(np.mean(x)))
+		print("Standard Deviation is: " + str(np.std(x)))
+		plt.plot(x,fit,'-o')
+
+		plt.hist(x, normed=True) 
 
 		plt.title(title)
 
@@ -74,7 +108,7 @@ class Graph:
 
 	def save(self, title):
 		try:
-			plt.savefig('./results/'+title + '.png')
+			plt.savefig('./results/'+title + '.png', bbox_inches='tight')
 		except FileNotFoundError:
 			try: 
 				os.makedirs('./results')

@@ -8,6 +8,7 @@ from datetime import date, timedelta as td
 
 # Import for oracle
 from marketPriceOracle import PriceOracle
+from webAPIOracle import WebAPIOracle
 
 # Import CFD
 from cfd import CFD
@@ -25,16 +26,21 @@ def main():
 	longResults = []
 
 	
-	MongoClientAddress = "43.243.203.47"
-	MongoPort = "12347"
+	MongoClientAddress = 
+	MongoPort = 
 
 	oracle = PriceOracle(MongoClientAddress, MongoPort)
+
+	poloniexAPI = WebAPIOracle("https://poloniex.com/public?command=returnChartData&currencyPair=USDT_ETH&start=1445061607&end=9999999999&period=7200")
 
 	cfdTest = CFDTests()
 
 	#Ethereum Tests
-	cfdTest.cfdPerformanceTest('2016-09-15', '2016-10-15', oracle, 
-								'poloniex_trade', 'ETH_USD', 3, 3, 'Ethereum')
+	#cfdTest.cfdPerformanceTest('2016-09-17', '2016-10-17', oracle, 
+	#							'poloniex_trade', 'ETH_USD', 3.6, 3.6, 'Ethereum')
+
+	cfdTest.findOptimalMargin('2016-09-17', '2016-10-17', oracle, 
+								'poloniex_trade', 'ETH_USD', 'Ethereum', 3.6)
 
 	print("Tests completed")
 

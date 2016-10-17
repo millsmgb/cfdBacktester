@@ -7,6 +7,8 @@
 
 # ---
 
+# This is the oracle to interface with Medici
+
 # Imports for JSON
 
 import json

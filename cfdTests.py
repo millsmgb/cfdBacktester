@@ -26,16 +26,11 @@ class CFDTests:
 	# Backtest cfd
 	def backTest(self, oracle, cfd, db, collection, date):
 		trades = oracle.getDocumentsByDate(db, collection, date)
-
-		print("Margin - Long position: " + str(cfd.marginLong))
-		print("Margin - Short position: " + str(cfd.marginShort))
-
+		numTrades = trades.len()
 		for trade in trades:
 			if (cfd.isTerminated == False):
-				print("Current Price: $" + trade['rate'])
 				cfd.mark(float(trade['rate']))
-				print("Margin - Long position: " + str(cfd.marginLong))
-				print("Margin - Short position: " + str(cfd.marginShort))
+				return numTrades
 			else:
 				print("Contract terminated")
 				break
@@ -59,6 +54,8 @@ class CFDTests:
 
 		# Track returns of underlying asset
 		ethReturns = []
+
+		numTransactions = 0
 
 		# Set up CFD
 		firstTrade = oracle.getOneDocumentByDate(db, collection, startDate)
@@ -85,7 +82,7 @@ class CFDTests:
 				print("Final day: " + str((d1 + td(days = i))))
 				break
 
-			self.backTest(oracle, testCFD, db, collection, str((d1 + td(days = i))))
+			numTransactions += self.backTest(oracle, testCFD, db, collection, str((d1 + td(days = i))))
 
 			# Gather results
 			timeline.append(d1 + td(days = i))
@@ -110,16 +107,17 @@ class CFDTests:
 		# Final margins
 		print("Final long margin: " + str(testCFD.marginLong))
 		print("Final short margin: " + str(testCFD.marginShort))
+		print("Final number of Transactions: " + str(numTransactions))
 
 		# Set multiline chart dicts
-		profits = {
-			'shortProfit': shortProfit,
-			'longProfit': longProfit
-		}
-		margins = {
-			'shortMargin': shortMargin,
-			'longMargin': longMargin
-		}
+		profits = []
+		profits.append(shortProfit)
+		profits.append(longProfit)
+
+		margins = []
+		margins.append(shortMargin)
+		margins.append(longMargin)
+
 
 		# Set legends
 		profitsLegend = ['Short Profit', 'Long Profit']
@@ -141,18 +139,62 @@ class CFDTests:
 		results.plotSimpleLineChart(timeline, ethReturns, currency + ' Returns over Time',
 									'Time (date)', 'Returns (decimal return)')
 
-		results.plotHistogram(ethReturns, 'Histogram of ' + currency + ' Returns', 
-								'Returns', 'Number of Occurances')
+		#results.plotHistogram(ethReturns, 'Frequency of ' + currency + ' Returns', 
+		#						'Returns', 'Frequency')
 
-		results.show()
+		results.plotPDFHistogram(ethReturns, 'Probability Density Function of ' + currency + ' Returns', 
+								'Returns', 'Probability Density')
 
 		results.close()
 
+	# Find optimal margin 
+	def findOptimalMargin(self, startDate, endDate, oracle, db, collection, currency, startingMargin):
+		margin = []
+		days = []
 
+		marginAmount = startingMargin
 
+		while (marginAmount > 0):
+			print("Margin amount: " + str(marginAmount))
+			# Set up CFD
+			firstTrade = oracle.getOneDocumentByDate(db, collection, startDate)
 
+			testCFD = CFD(marginAmount, marginAmount, float(firstTrade['rate']))
 
+			# Set initial price
+			initialPrice = testCFD.price
+			
 
+			# Set start and end dates in YYYY-
+			d1 = datetime.strptime(startDate, '%Y-%m-%d').date()
+			d2 = datetime.strptime(endDate, '%Y-%m-%d').date()
+
+			delta = d2 - d1
+
+			totalDays = 0
+
+			# Perform backtest between dates
+			for i in range(delta.days + 1):
+				# Check if contract has terminated, if so break early
+				if (testCFD.isTerminated == True):
+					print("Final day: " + str((d1 + td(days = i))))
+					break
+
+				self.backTest(oracle, testCFD, db, collection, str((d1 + td(days = i))))
+				totalDays = totalDays + 1
+
+			margin.append(marginAmount)
+			days.append(totalDays)
+			marginAmount = marginAmount - 0.1
+
+		result = Graph()
+
+		result.plotSimpleLineChart(margin, days, 'Time to liquidation for ' + currency,
+									'Margin Amounts ($USD)', 'Days to liquidation')
+
+		result.show()
+
+		result.close()
 
 
 		
